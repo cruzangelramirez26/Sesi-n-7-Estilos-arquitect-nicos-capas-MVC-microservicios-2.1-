@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sesión 7 — Capas, MVC, Microservicios · EGEL Plus</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0c10;--card:#12151e;--card2:#181c28;--border:#1e2436;--text:#c8cdd8;--text2:#7c8494;--white:#e8ecf4;--green:#22c55e;--green2:#15803d;--greenBg:rgba(34,197,94,.08);--red:#ef4444;--red2:#b91c1c;--redBg:rgba(239,68,68,.08);--blue:#3b82f6;--amber:#f59e0b;--amberBg:rgba(245,158,11,.08);--purple:#a78bfa;--cyan:#06b6d4;--orange:#f97316}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.7;min-height:100vh}
+::selection{background:var(--cyan);color:#fff}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#2a3040;border-radius:3px}
+.shell{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+.hdr{background:linear-gradient(135deg,#111422,#161b2e 50%,#12162a);border:1px solid var(--border);border-radius:16px;padding:28px 24px;margin-bottom:20px;position:relative;overflow:hidden}
+.hdr::after{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(6,182,212,.07),transparent 70%);pointer-events:none}
+.hdr .tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;color:var(--text2);margin-bottom:6px;text-transform:uppercase}
+.hdr h1{font-size:21px;font-weight:700;color:var(--white);margin-bottom:4px}
+.hdr p{font-size:13px;color:var(--text2)}
+.tabs{display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:9px 18px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.tab.active{background:var(--cyan);color:#fff;border-color:var(--cyan);font-weight:600}
+.tab:hover:not(.active){border-color:#3b4a6a;color:var(--white)}
+.section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:12px;animation:fadeUp .3s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.section h2{font-size:17px;font-weight:700;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section h3{font-size:14px;font-weight:600;color:var(--cyan);margin:14px 0 6px}
+.section p,.section li{font-size:13.5px;line-height:1.75;color:var(--text)}
+.section ul{padding-left:18px;margin:6px 0}.section li{margin-bottom:4px}
+.section strong{color:var(--white);font-weight:600}
+.ref{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--text2);margin-top:10px;font-style:italic}
+.tip{background:var(--amberBg);border:1px solid rgba(245,158,11,.12);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:12.5px}
+.tip strong{color:var(--amber)}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.vs>div{background:var(--card2);border-radius:8px;padding:10px 12px;font-size:12.5px;border:1px solid var(--border)}
+.vs h4{font-size:12px;font-weight:600;margin-bottom:4px}
+@media(max-width:600px){.vs{grid-template-columns:1fr}}
+.pbar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.pbar .track{flex:1;height:6px;background:#1a1f2e;border-radius:3px;overflow:hidden}
+.pbar .fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:3px;transition:width .4s ease}
+.pbar .label{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);white-space:nowrap}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:14px;animation:fadeUp .35s ease both}
+.qnum{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;color:var(--cyan);margin-bottom:8px}
+.qtxt{font-size:15px;color:var(--white);font-weight:500;line-height:1.7;margin-bottom:6px;white-space:pre-line}
+.qctx{font-size:13.5px;color:var(--text);line-height:1.7;margin:8px 0 16px;padding:10px 14px;background:var(--card2);border-radius:8px;border-left:3px solid var(--border);white-space:pre-line}
+.opts{display:grid;gap:8px}
+.opt{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px;font-size:14px;color:var(--text);cursor:pointer;transition:all .2s;text-align:left;font-family:'DM Sans',sans-serif;line-height:1.6;display:flex;align-items:flex-start;gap:10px}
+.opt:hover:not(.locked){border-color:#3b4a6a;background:#1a1f30}
+.opt .letter{font-family:'DM Mono',monospace;font-weight:600;font-size:13px;color:var(--text2);min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,.04);flex-shrink:0;margin-top:1px}
+.opt.correct{border-color:var(--green2);background:var(--greenBg)}.opt.correct .letter{background:var(--green);color:#fff}
+.opt.wrong{border-color:var(--red2);background:var(--redBg)}.opt.wrong .letter{background:var(--red);color:#fff}
+.opt.locked{cursor:default;opacity:.7}.opt.correct.locked{opacity:1}.opt.dimmed{opacity:.45}
+.fb{margin-top:14px;padding:16px;border-radius:10px;animation:fadeUp .3s ease both;font-size:13.5px;line-height:1.75}
+.fb.ok{background:var(--greenBg);border:1px solid rgba(34,197,94,.15)}.fb.ok .fb-tag{color:var(--green)}
+.fb.no{background:var(--redBg);border:1px solid rgba(239,68,68,.15)}.fb.no .fb-tag{color:var(--red)}
+.fb-tag{font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'DM Mono',monospace}
+.fb-text{color:var(--text)}.fb-ref{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);margin-top:8px}
+.fb-trap{margin-top:10px;padding:10px 12px;background:var(--amberBg);border:1px solid rgba(245,158,11,.12);border-radius:8px}
+.fb-trap .trap-tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--amber);font-weight:600;margin-bottom:4px}
+.fb-trap p{font-size:12.5px;color:var(--text);line-height:1.6}
+.nav{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:10px 20px;border-radius:9px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--cyan);color:#fff}.btn-primary:hover{background:#0891b2}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-ghost:hover{border-color:#3b4a6a;color:var(--white)}
+.results{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;animation:fadeUp .4s ease both}
+.results h2{font-size:20px;color:var(--white);margin-bottom:16px}
+.score-big{font-family:'DM Mono',monospace;font-size:48px;font-weight:700;margin-bottom:4px}
+.score-ok{color:var(--green)}.score-mid{color:var(--amber)}.score-bad{color:var(--red)}
+.modes{display:grid;gap:10px;margin-top:16px}
+.mode-btn{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:all .2s;text-align:left;font-family:'DM Sans',sans-serif}
+.mode-btn:hover{border-color:var(--cyan);background:#131828}
+.mode-btn h3{font-size:15px;color:var(--white);margin-bottom:3px}.mode-btn p{font-size:12px;color:var(--text2)}
+.review-item{padding:12px 16px;background:var(--card2);border-radius:8px;margin-bottom:8px;font-size:13px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="shell" id="app"></div>
+<script>
+const theory=[
+{id:"intro",title:"¿Qué es arquitectura de software?",icon:"🏗️",html:`
+<p><strong>Definición (Bass, Clements & Kazman, 2013):</strong> La arquitectura de software es el conjunto de estructuras necesarias para razonar sobre el sistema — sus elementos, las relaciones entre ellos y sus propiedades.</p>
+<p><strong>Cervantes et al. (2016):</strong> Es la organización fundamental del sistema, representada por sus componentes, sus relaciones y los principios que guían su diseño y evolución.</p>
+<h3>¿Qué la determina?</h3>
+<p>La arquitectura se define principalmente por los <strong>atributos de calidad</strong> (RNF): rendimiento, seguridad, mantenibilidad, escalabilidad. Los requisitos funcionales dicen QUÉ hace el sistema; los RNF dictan CÓMO se estructura.</p>
+<h3>Arquitectura vs Diseño detallado</h3>
+<ul>
+<li><strong>Arquitectura</strong> = decisiones MACRO: qué componentes, cómo se comunican, qué estilo</li>
+<li><strong>Diseño detallado</strong> = decisiones MICRO: clases, métodos, patrones GoF</li>
+</ul>
+<h3>Capas ≠ Tiers</h3>
+<p>Esto es clave y siempre cae:</p>
+<ul>
+<li><strong>Capas (layers)</strong> = organización LÓGICA del código. Separación de responsabilidades.</li>
+<li><strong>Tiers</strong> = distribución FÍSICA en máquinas/servidores.</li>
+<li>Un sistema puede tener 3 capas y correr en 1 tier (misma máquina) o en 3 tiers (máquinas separadas).</li>
+</ul>
+<div class="tip"><strong>⚡ EGEL:</strong> Si te preguntan qué impulsa la elección de arquitectura, la respuesta son los ATRIBUTOS DE CALIDAD (RNF), no los casos de uso.</div>
+`,ref:"Bass et al. (2013) Cap. 1-2 · Cervantes et al. (2016) Cap. 1 · SWEBOK v3.0 Cap. 2"},
+
+{id:"capas",title:"Estilo: Capas (Layered)",icon:"📚",html:`
+<p><strong>Principio:</strong> El sistema se organiza en capas horizontales. Cada capa solo puede comunicarse con la capa inmediatamente inferior (estricto) o con cualquier inferior (relajado).</p>
+<h3>Capas típicas (de arriba a abajo)</h3>
+<ul>
+<li><strong>Presentación</strong> — UI, vistas, controladores de entrada</li>
+<li><strong>Lógica de negocio</strong> — reglas, servicios, procesamiento</li>
+<li><strong>Acceso a datos</strong> — repositorios, ORM, queries</li>
+<li><strong>Infraestructura</strong> — BD, filesystem, servicios externos</li>
+</ul>
+<h3>Regla fundamental</h3>
+<p>Dependencias van de ARRIBA hacia ABAJO. Presentación conoce negocio, pero negocio <strong>NO conoce</strong> presentación. Esto permite cambiar la UI sin tocar la lógica.</p>
+<h3>Estricto vs Relajado</h3>
+<ul>
+<li><strong>Estricto:</strong> capa N solo habla con capa N-1. Más mantenible, más lento (cada request atraviesa todas las capas).</li>
+<li><strong>Relajado:</strong> capa N habla con cualquier inferior. Más rápido, más acoplado.</li>
+</ul>
+<div class="vs">
+<div><h4 style="color:var(--green)">✓ Ventajas</h4><p>Separación de responsabilidades. Equipos trabajan por capa. Fácil de mantener. Ampliamente entendido.</p></div>
+<div><h4 style="color:var(--red)">✗ Desventajas</h4><p>Rendimiento (todo atraviesa todas las capas). Riesgo de "capas ficticias" que solo pasan datos. Escalamiento horizontal difícil.</p></div>
+</div>
+<div class="tip"><strong>⚡ EGEL:</strong> Capas favorece MODIFICABILIDAD. Si el escenario dice "el equipo de frontend debe trabajar independiente del backend" → capas.</div>
+`,ref:"Bass et al. (2013) Cap. 13 · Cervantes et al. (2016) Cap. 4 · Sommerville (2011) Cap. 6"},
+
+{id:"mvc",title:"Estilo: MVC",icon:"🔄",html:`
+<p><strong>Principio:</strong> Separar los datos (Model) de la presentación (View) y de la lógica de interacción (Controller).</p>
+<h3>Los 3 componentes</h3>
+<ul>
+<li><strong>Model</strong> — datos y reglas de negocio. NO sabe nada de la UI.</li>
+<li><strong>View</strong> — presenta datos al usuario. Solo MUESTRA, no procesa.</li>
+<li><strong>Controller</strong> — recibe input del usuario, invoca operaciones del Model, selecciona la View.</li>
+</ul>
+<h3>Flujo</h3>
+<p>Usuario → Controller → Model → Controller → View → Usuario</p>
+<p>El Controller es el ORQUESTADOR. El Model nunca habla directo con la View en el flujo estándar del EGEL.</p>
+<div class="vs">
+<div><h4 style="color:var(--green)">✓ Ventajas</h4><p>Múltiples vistas del mismo modelo (web, móvil, API). Cambio de UI sin tocar lógica. Desarrollo paralelo. Testeable.</p></div>
+<div><h4 style="color:var(--red)">✗ Desventajas</h4><p>Complejidad para apps simples. Controllers pueden crecer mucho ("fat controller"). Navegación compleja entre componentes.</p></div>
+</div>
+<h3>Variantes</h3>
+<ul>
+<li><strong>MVP (Model-View-Presenter):</strong> La View es PASIVA — solo renderiza lo que el Presenter le dice. El Presenter maneja toda la lógica de presentación.</li>
+<li><strong>MVVM (Model-View-ViewModel):</strong> ViewModel expone datos observables, la View se bindea automáticamente. Popular en Angular, Vue, WPF.</li>
+</ul>
+<div class="tip"><strong>⚡ EGEL:</strong> La trampa clásica: decir que el Model accede a la View directamente. El Model NUNCA conoce la View. También: MVP ≠ MVC — en MVP la View es pasiva.</div>
+`,ref:"Sommerville (2011) Cap. 6.3 · Bass et al. (2013) Cap. 13 · Cervantes et al. (2016) Cap. 4"},
+
+{id:"micro",title:"Estilo: Microservicios",icon:"🧩",html:`
+<p><strong>Principio:</strong> El sistema se descompone en servicios pequeños e independientes, cada uno en su propio proceso, comunicándose por mecanismos ligeros (HTTP/REST, mensajería).</p>
+<h3>Características clave</h3>
+<ul>
+<li>Cada servicio tiene su <strong>propia base de datos</strong> (database per service)</li>
+<li>Cada servicio es <strong>desplegable independientemente</strong></li>
+<li>Pueden usar <strong>tecnología diferente</strong> cada uno (polyglot)</li>
+<li>Equipos organizados por <strong>capacidad de negocio</strong>, no por capa técnica</li>
+</ul>
+<h3>Comunicación</h3>
+<ul>
+<li><strong>Síncrona:</strong> REST, gRPC — el cliente espera respuesta</li>
+<li><strong>Asíncrona:</strong> mensajería con broker (Kafka, RabbitMQ) — el cliente no espera</li>
+</ul>
+<div class="vs">
+<div><h4 style="color:var(--green)">✓ Ventajas</h4><p>Escalamiento granular (solo el servicio que lo necesita). Despliegue independiente. Un servicio caído no tumba todo. Equipos autónomos.</p></div>
+<div><h4 style="color:var(--red)">✗ Desventajas</h4><p>Complejidad operativa (monitoreo distribuido). Latencia de red entre servicios. Consistencia eventual de datos. Debugging difícil.</p></div>
+</div>
+<h3>Microservicios vs Monolito</h3>
+<ul>
+<li><strong>Monolito:</strong> una sola unidad desplegable. Más simple para proyectos pequeños/equipos chicos. Escalamiento solo vertical o réplicas completas.</li>
+<li><strong>Microservicios:</strong> múltiples unidades. Mejor para equipos grandes, sistemas complejos. Escalamiento horizontal granular.</li>
+</ul>
+<h3>Ley de Conway</h3>
+<p>Las organizaciones diseñan sistemas que reflejan su estructura de comunicación. Por eso en microservicios cada equipo es dueño de un servicio — la arquitectura refleja la organización.</p>
+<div class="tip"><strong>⚡ EGEL:</strong> Si el escenario dice "equipos independientes que despliegan sin afectar al resto" o "escalar solo el módulo de pagos" → microservicios. Si dice "sistema simple, un solo equipo, arranque rápido" → monolito.</div>
+`,ref:"Bass et al. (2013) Cap. 13 · Brown (2020) · SWEBOK v3.0 Cap. 2"},
+
+{id:"resumen",title:"Resumen rápido",icon:"📝",html:`
+<h3>Lo que más cae en el EGEL de estos 3 estilos</h3>
+<ul>
+<li><strong>1.</strong> La arquitectura la determinan los RNF (atributos de calidad), no los funcionales.</li>
+<li><strong>2.</strong> Capas: dependencias de arriba a abajo. Estricto (solo adyacente) vs relajado (cualquier inferior). Favorece modificabilidad.</li>
+<li><strong>3.</strong> Capas ≠ Tiers. 3 capas en 1 máquina = 3 capas, 1 tier.</li>
+<li><strong>4.</strong> MVC: Model NO conoce la View. Controller orquesta. Permite múltiples vistas del mismo modelo.</li>
+<li><strong>5.</strong> MVP: View pasiva, Presenter maneja todo. Diferente de MVC.</li>
+<li><strong>6.</strong> Microservicios: BD propia + despliegue independiente + polyglot + escalamiento granular.</li>
+<li><strong>7.</strong> Monolito para equipos pequeños/inicio. Microservicios para equipos grandes/complejidad alta.</li>
+<li><strong>8.</strong> Ley de Conway: la arquitectura refleja la organización.</li>
+<li><strong>9.</strong> Comunicación síncrona (REST) vs asíncrona (mensajería) en microservicios.</li>
+<li><strong>10.</strong> Desventaja principal de microservicios: complejidad operativa.</li>
+</ul>
+`,ref:"Todas las referencias anteriores"}
+];
+
+const Q=[
+{n:1,q:"El tipo de arquitectura de un sistema depende fuertemente de:",o:["Los casos de uso funcionales.","Los requerimientos no funcionales.","La cantidad de desarrolladores.","El lenguaje de programación."],c:1,x:"La arquitectura se define por los atributos de calidad (RNF), no por los funcionales. Los funcionales se pueden implementar con cualquier arquitectura.",ref:"Bass et al. (2013) Cap. 2",trap:"A suena lógico pero los funcionales no restringen la estructura — los RNF sí."},
+
+{n:2,q:"Sistema web con presentación, lógica de negocio y BD. Todo corre en la misma máquina. ¿Cuántas capas y cuántos tiers?",o:["3 capas, 3 tiers.","3 capas, 1 tier.","1 capa, 3 tiers.","1 capa, 1 tier."],c:1,x:"Capas = organización LÓGICA (3 separaciones). Tiers = distribución FÍSICA (1 máquina). No son lo mismo.",ref:"Sommerville (2011) Cap. 6",trap:"A confunde capas con tiers. Tener 3 separaciones lógicas no implica 3 máquinas."},
+
+{n:3,q:"En capas estricta, presentación necesita un dato de la BD. ¿Qué hace?",o:["Consulta la BD directo.","Pide a negocio, que pide a datos.","Pide a cualquier capa inferior.","Salta negocio y va a datos."],c:1,x:"Estricta: cada capa solo habla con la inmediata inferior. Presentación→Negocio→Datos.",ref:"Bass et al. (2013) Cap. 13",trap:"C describe el modelo relajado. A y D violan la regla de capas."},
+
+{n:4,q:"En MVC, ¿quién decide qué View mostrar después de procesar una acción?",o:["El Model.","La View.","El Controller.","El usuario."],c:2,x:"El Controller recibe el input, invoca al Model, y SELECCIONA la View apropiada. Es el orquestador del flujo.",ref:"Sommerville (2011) Cap. 6.3",trap:"A: el Model no sabe nada de vistas. B: la View no decide, solo renderiza."},
+
+{n:5,q:"¿En qué se diferencia MVP de MVC?",o:["Son idénticos.","En MVP la View es pasiva y el Presenter controla todo.","MVP no tiene Model.","MVP es para móvil, MVC para web."],c:1,x:"En MVP, la View solo renderiza. El Presenter decide QUÉ mostrar y CÓMO. En MVC el Controller dirige tráfico pero la View puede tener más lógica.",ref:"Sommerville (2011) Cap. 6.3",trap:"D limita por plataforma cuando ambos se usan en ambas."},
+
+{n:6,q:"Un e-commerce necesita escalar solo pagos en Black Friday, que inventario despliegue sin afectar pagos, y usar Java para pagos y Python para recomendaciones. ¿Estilo?",o:["Capas.","MVC.","Microservicios.","Monolito."],c:2,x:"Escalamiento granular + despliegue independiente + polyglot = microservicios. Ningún otro estilo ofrece los tres.",ref:"Bass et al. (2013) Cap. 13 · Brown (2020)",trap:"A ofrece separación lógica pero no despliegue independiente por módulo ni polyglot."},
+
+{n:7,q:"Startup de 3 personas sin requisitos claros de escalabilidad. ¿Arquitectura recomendada?",o:["Microservicios para prepararse.","Monolito bien estructurado.","MVC distribuido.","Capas con 5 tiers."],c:1,x:"Equipo pequeño + requisitos inciertos = monolito. Microservicios agregan complejidad que 3 personas no pueden manejar.",ref:"Brown (2020)",trap:"A suena visionario pero la complejidad operativa con 3 personas es contraproducente."},
+
+{n:8,q:"¿Cuál NO es una desventaja de microservicios?",o:["Complejidad operativa.","Latencia de red.","Despliegue independiente.","Consistencia eventual."],c:2,x:"Despliegue independiente es una VENTAJA. Las otras tres son desventajas reales.",ref:"Brown (2020) · Bass et al. (2013)",trap:"Pregunta invertida: pide lo que NO es desventaja. Lee con cuidado."},
+
+{n:9,q:"En MVC, el equipo quiere mostrar los mismos datos como página web, API JSON y app móvil. ¿Qué componente cambia y cuál permanece?",o:["Cambia el Model, permanece la View.","Cambia la View, permanece el Model.","Cambian los tres.","No se puede con MVC."],c:1,x:"El Model (datos+lógica) es el mismo. Solo cambian las Views (HTML, JSON, pantalla nativa). Esa es la ventaja central de MVC.",ref:"Sommerville (2011) Cap. 6.3",trap:"A invierte los roles. D niega una capacidad que es la razón de ser de MVC."},
+
+{n:10,q:"Un sistema de capas tiene: presentación que llama directo a la BD saltando negocio. ¿Qué principio viola?",o:["Solo viola encapsulamiento.","Viola la regla de dependencia de capas.","No viola nada, es capas relajado.","Viola MVC."],c:1,x:"Presentación→BD salta la capa de negocio. En estricta es violación directa. En relajado PODRÍA ser válido, pero presentación accediendo a BD directamente es mala práctica en cualquier variante.",ref:"Bass et al. (2013) Cap. 13",trap:"C dice 'relajado lo permite' — técnicamente puede, pero en la práctica presentación→BD directamente es una violación del principio de separación."},
+
+{n:11,q:"Cada microservicio tiene su propia BD. Un cambio en el servicio de usuarios requiere datos actualizados instantáneamente en el servicio de pedidos. ¿Problema principal?",o:["No hay problema.","Consistencia eventual: los datos pueden tardar en sincronizarse.","Rendimiento: consultar otra BD es lento.","Seguridad: las BDs separadas son vulnerables."],c:1,x:"Database per service = cada servicio es dueño de sus datos. La sincronización entre servicios es eventual, no instantánea. Es el tradeoff principal de microservicios.",ref:"Brown (2020)",trap:"A niega un problema real. C se enfoca en rendimiento cuando el problema es de consistencia."},
+
+{n:12,q:"Las organizaciones diseñan sistemas que reflejan su estructura de comunicación. ¿Qué es esto?",o:["Principio SOLID.","Ley de Conway.","Principio de responsabilidad única.","Ley de Brooks."],c:1,x:"Conway: estructura del software refleja estructura organizacional. Por eso microservicios organiza equipos por capacidad de negocio.",ref:"Bass et al. (2013) · Brown (2020)",trap:"D (Brooks) dice que agregar gente a un proyecto atrasado lo atrasa más — tema diferente."},
+
+{n:13,q:"Un arquitecto necesita que el equipo de UI trabaje sin depender del equipo de backend, y que cambiar la UI no requiera tocar la lógica. ¿Qué atributo de calidad busca y qué estilo lo favorece?",o:["Rendimiento; microservicios.","Modificabilidad; capas.","Seguridad; cliente-servidor.","Escalabilidad; MVC."],c:1,x:"Independencia entre equipos + cambiar UI sin tocar lógica = modificabilidad. Capas separa responsabilidades por nivel, permitiendo cambios aislados.",ref:"Bass et al. (2013) Cap. 13 · Cervantes et al. (2016)",trap:"D: MVC también ayuda, pero el atributo que busca es modificabilidad, no escalabilidad."},
+
+{n:14,q:"En microservicios, ¿qué diferencia hay entre comunicación síncrona y asíncrona?",o:["Síncrona usa HTTP, asíncrona usa BD.","En síncrona el cliente espera respuesta; en asíncrona no.","Síncrona es más lenta.","No hay diferencia práctica."],c:1,x:"Síncrona (REST, gRPC): el cliente se bloquea esperando. Asíncrona (Kafka, RabbitMQ): el cliente envía y sigue — el resultado llega después.",ref:"Brown (2020) · Bass et al. (2013)",trap:"A mezcla mecanismos incorrectamente. C no siempre es cierta — depende del caso."},
+
+{n:15,q:"Un monolito está creciendo: 30 desarrolladores, 5 equipos, deploys que rompen funcionalidad ajena. ¿Qué migración tiene más sentido?",o:["Agregar más capas al monolito.","Migrar a microservicios.","Convertir a MVC.","Reescribir en otro lenguaje."],c:1,x:"30 devs con deploys que se pisan = necesitan despliegue independiente por equipo. Eso es microservicios. Más capas no resuelve el problema de deploy.",ref:"Brown (2020) · Bass et al. (2013)",trap:"A agrega estructura lógica pero el problema es de DESPLIEGUE, no de organización de código."}
+];
+
+const L=["A","B","C","D"];
+let S={view:"menu",pool:[],cur:0,ans:{},ti:0};
+
+function sh(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function startQuiz(){S.pool=sh([...Q]);S.cur=0;S.ans={};S.view="quiz";render();window.scrollTo(0,0);}
+function pick(qi,oi){if(S.ans[qi]!==undefined)return;S.ans[qi]=oi;render();setTimeout(()=>{const e=document.getElementById('fb-'+qi);if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'});},100);}
+function goTo(i){S.cur=i;render();window.scrollTo(0,0);}
+function finish(){S.view="results";render();window.scrollTo(0,0);}
+function goHome(){S.view="menu";render();window.scrollTo(0,0);}
+function showTheory(i){S.ti=i||0;S.view="theory";render();window.scrollTo(0,0);}
+
+function render(){
+  const a=document.getElementById('app');
+  if(S.view==="menu")return renderMenu(a);
+  if(S.view==="theory")return renderTheory(a);
+  if(S.view==="results")return renderResults(a);
+  if(S.view==="review")return renderReview(a);
+  renderQuiz(a);
+}
+
+function renderMenu(el){
+  el.innerHTML=`
+  <div class="hdr"><div class="tag">SESIÓN 7 · MARTES 24 MARZO · SUBÁREA 2.1</div>
+  <h1>Estilos Arquitectónicos: Capas, MVC, Microservicios</h1>
+  <p>Teoría referenciada + 15 preguntas de escenario</p></div>
+  <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text2);margin-bottom:12px">CONTENIDO</div>
+  <div class="modes">
+    <button class="mode-btn" onclick="showTheory(0)"><h3 style="color:var(--cyan)">📖 Teoría</h3><p>${theory.length} fichas · Bass, Cervantes, Sommerville, SWEBOK</p></button>
+    <button class="mode-btn" onclick="startQuiz()" style="border-color:rgba(239,68,68,.25)"><h3 style="color:#ef4444">🧪 Quiz — 15 preguntas</h3><p>Escenarios con retroalimentación y análisis de trampa</p></button>
+  </div>`;
+}
+
+function renderTheory(el){
+  const t=theory[S.ti];
+  el.innerHTML=`
+  <div class="hdr" style="padding:16px 22px"><div style="display:flex;justify-content:space-between;align-items:center">
+    <div><div class="tag">TEORÍA 2.1</div></div>
+    <button class="btn btn-ghost" onclick="goHome()" style="font-size:11px;padding:6px 12px">✕</button></div></div>
+  <div class="tabs">${theory.map((th,i)=>`<button class="tab ${i===S.ti?'active':''}" onclick="S.ti=${i};render();window.scrollTo(0,0)">${th.icon} ${th.title.length>16?th.title.substring(0,16)+'…':th.title}</button>`).join('')}</div>
+  <div class="section"><h2>${t.icon} ${t.title}</h2>${t.html}<div class="ref">📖 ${t.ref}</div></div>
+  <div class="nav">
+    ${S.ti>0?`<button class="btn btn-ghost" onclick="S.ti--;render();window.scrollTo(0,0)">← Anterior</button>`:''}
+    ${S.ti<theory.length-1?`<button class="btn btn-primary" onclick="S.ti++;render();window.scrollTo(0,0)">Siguiente →</button>`:''}
+    <button class="btn btn-ghost" onclick="startQuiz()" style="margin-left:auto">🧪 Quiz</button>
+  </div>`;
+}
+
+function renderQuiz(el){
+  const q=S.pool[S.cur],qi=S.cur,ad=S.ans[qi]!==undefined,ok=ad&&S.ans[qi]===q.c,t=S.pool.length,d=Object.keys(S.ans).length,p=Math.round((d/t)*100);
+  el.innerHTML=`
+  <div class="hdr" style="padding:16px 22px"><div style="display:flex;justify-content:space-between;align-items:center">
+    <div><div class="tag">QUIZ 2.1</div></div>
+    <button class="btn btn-ghost" onclick="goHome()" style="font-size:11px;padding:6px 12px">✕</button></div></div>
+  <div class="pbar"><div class="label">${d}/${t}</div><div class="track"><div class="fill" style="width:${p}%"></div></div><div class="label">${p}%</div></div>
+  <div class="qcard"><div class="qnum">P${qi+1}/${t}</div><div class="qtxt">${q.q}</div>
+  <div class="opts">${q.o.map((o,i)=>{let c='opt';if(ad){c+=' locked';if(i===q.c)c+=' correct';else if(i===S.ans[qi]&&i!==q.c)c+=' wrong';else c+=' dimmed';}return`<button class="${c}" onclick="pick(${qi},${i})"><span class="letter">${L[i]}</span><span>${o}</span></button>`;}).join('')}</div>
+  ${ad?`<div class="fb ${ok?'ok':'no'}" id="fb-${qi}"><div class="fb-tag">${ok?'✓ CORRECTO':'✗ INCORRECTO — '+L[q.c]}</div><div class="fb-text">${q.x}</div><div class="fb-ref">📖 ${q.ref}</div>${q.trap?`<div class="fb-trap"><div class="trap-tag">⚠️ TRAMPA</div><p>${q.trap}</p></div>`:''}</div>`:''}</div>
+  <div class="nav">${qi>0?`<button class="btn btn-ghost" onclick="goTo(${qi-1})">←</button>`:''}${ad&&qi<t-1?`<button class="btn btn-primary" onclick="goTo(${qi+1})">Siguiente →</button>`:''}${ad&&qi===t-1?`<button class="btn btn-primary" onclick="finish()">Resultados</button>`:''}${d===t&&qi<t-1?`<button class="btn btn-primary" onclick="finish()" style="margin-left:auto">Resultados</button>`:''}</div>
+  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:16px">${S.pool.map((_,i)=>{const a=S.ans[i],ic=a!==undefined&&a===S.pool[i].c,iw=a!==undefined&&a!==S.pool[i].c;let bg=i===qi?'var(--cyan)':ic?'var(--green)':iw?'var(--red)':'var(--card2)',bd=i===qi?'var(--cyan)':ic?'var(--green2)':iw?'var(--red2)':'var(--border)';return`<button onclick="goTo(${i})" style="width:28px;height:28px;border-radius:6px;background:${bg};border:1px solid ${bd};color:${i===qi||a!==undefined?'#fff':'var(--text2)'};font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;display:flex;align-items:center;justify-content:center">${i+1}</button>`;}).join('')}</div>`;
+}
+
+function renderResults(el){
+  const t=S.pool.length,c=Object.entries(S.ans).filter(([k,v])=>v===S.pool[+k].c).length,p=Math.round((c/t)*100),cls=p>=80?'score-ok':p>=60?'score-mid':'score-bad';
+  const wrong=S.pool.filter((_,i)=>S.ans[i]!==undefined&&S.ans[i]!==S.pool[i].c);
+  el.innerHTML=`<div class="results"><h2>Resultados — Sesión 7</h2><div class="score-big ${cls}">${c}/${t}</div><div style="font-size:14px;color:var(--text2);margin-bottom:20px">${p}%</div>
+  ${wrong.length>0?`<div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text2);margin:16px 0 10px">FALLASTE</div>${wrong.map(q=>`<div class="review-item"><div style="color:var(--white);font-weight:500">P${q.n}. ${q.q.substring(0,80)}...</div><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--green);margin-top:4px">→ ${L[q.c]}: ${q.o[q.c]}</div></div>`).join('')}`:'<div style="color:var(--green);font-size:15px;margin:20px 0">🎉 Perfecto</div>'}
+  <div class="nav" style="margin-top:20px"><button class="btn btn-ghost" onclick="S.view='review';render();window.scrollTo(0,0)">📋 Revisar</button><button class="btn btn-ghost" onclick="showTheory(0)">📖 Teoría</button><button class="btn btn-primary" onclick="goHome()">🏠</button></div></div>`;
+}
+
+function renderReview(el){
+  el.innerHTML=`<div class="hdr" style="padding:16px 22px"><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="tag">REVISIÓN</div></div><button class="btn btn-ghost" onclick="finish()" style="font-size:11px;padding:6px 12px">←</button></div></div>
+  ${S.pool.map((q,i)=>{const a=S.ans[i],ok=a!==undefined&&a===q.c;return`<div class="qcard"><div class="qnum" style="display:flex;justify-content:space-between"><span>P${q.n}</span><span style="color:${ok?'var(--green)':'var(--red)'};font-weight:600">${ok?'✓':'✗'}</span></div><div class="qtxt" style="font-size:13px">${q.q}</div><div style="margin-top:8px;font-size:12px">${!ok?`<div style="color:var(--red)">Tuya: ${L[a]} — ${q.o[a]}</div>`:''}
+  <div style="color:var(--green)">→ ${L[q.c]}: ${q.o[q.c]}</div></div><div style="margin-top:6px;font-size:11px;color:var(--text2);line-height:1.6">${q.x}</div></div>`;}).join('')}
+  <div class="nav" style="margin-top:14px"><button class="btn btn-primary" onclick="goHome()">🏠</button></div>`;
+}
+render();
+</script>
+</body>
+</html>
